@@ -7,10 +7,30 @@ from io import BytesIO
 # ==========================================
 st.set_page_config(page_title="Dashboard MTBF & Reliability", layout="wide", page_icon="🏭")
 
+# INJEKSI CSS UNTUK BACKGROUND INDUSTRI
 st.markdown("""
     <style>
     #MainMenu {visibility: hidden;}
     footer {visibility: hidden;}
+    header {background: transparent !important;}
+
+    /* Mengganti background utama dengan gambar industri */
+    [data-testid="stAppViewContainer"] {
+        background-image: url("https://images.unsplash.com/photo-1581091226825-a6a2a5aee158?auto=format&fit=crop&w=2000&q=80");
+        background-size: cover;
+        background-position: center;
+        background-attachment: fixed;
+    }
+
+    /* Membuat efek kaca (glassmorphism) semi-transparan pada area konten agar teks tetap terbaca */
+    .block-container {
+        background-color: rgba(255, 255, 255, 0.92); 
+        padding: 2rem !important;
+        border-radius: 15px;
+        box-shadow: 0 10px 20px rgba(0, 0, 0, 0.3);
+        margin-top: 2rem;
+        margin-bottom: 2rem;
+    }
     </style>
     """, unsafe_allow_html=True)
 
@@ -22,8 +42,6 @@ def format_waktu_detail(total_bulan):
     tahun = int(total_bulan // 12)
     sisa_bulan = total_bulan % 12
     bulan = int(sisa_bulan)
-
-    # Asumsi 1 Bulan = 30 Hari
     hari = int(round((sisa_bulan - bulan) * 30))
 
     if hari == 30:
@@ -78,11 +96,9 @@ if file_unggahan is not None:
         lambda x: TOTAL_BULAN_3_TAHUN / x if x > 0 else TOTAL_BULAN_3_TAHUN
     )
 
-    # Menerapkan fungsi format Tahun, Bulan, Hari
     df['MTBF_Format'] = df['MTBF_Angka_Bulan'].apply(format_waktu_detail)
     df['Rekomendasi'] = df['MTBF_Angka_Bulan'].apply(tentukan_rekomendasi)
 
-    # Filter Area di Sidebar
     st.sidebar.markdown("---")
     st.sidebar.subheader("Penyaringan Data")
     list_area = ["Semua Area Operasional"] + list(df['Area'].unique())
@@ -127,7 +143,7 @@ if file_unggahan is not None:
     st.markdown("---")
 
     # ==========================================
-    # 6. TABEL DATA (Di bawah grafik)
+    # 6. TABEL DATA
     # ==========================================
     st.subheader("📋 Detail Data Historis & Status Maintenance")
 
@@ -142,7 +158,6 @@ if file_unggahan is not None:
 
     st.dataframe(tabel_tampil, use_container_width=True, height=400)
 
-    # Tombol Ekspor
     st.write("")
     output = BytesIO()
     with pd.ExcelWriter(output, engine='openpyxl') as writer:
@@ -158,18 +173,13 @@ if file_unggahan is not None:
 
 else:
     # ==========================================
-    # LAYAR SAMBUTAN
+    # LAYAR SAMBUTAN (IKON DIHAPUS)
     # ==========================================
     st.info("👋 Selamat datang di Sistem Analisis Keandalan Equipment.")
-
-    col1, col2 = st.columns([1, 2])
-    with col1:
-        st.image("https://cdn-icons-png.flaticon.com/512/2850/2850151.png", width=200)
-    with col2:
-        st.write("""
-        **Cara Menggunakan Sistem:**
-        1. Siapkan file riwayat kerusakan dari *database* (Format Excel `.xlsx`).
-        2. Buka panel menu di sebelah kiri ⬅️.
-        3. Klik **Browse files** dan masukkan file Anda.
-        4. Sistem akan secara otomatis menghitung *Mean Time Between Failures* (MTBF) hingga presisi **Tahun, Bulan, dan Hari**, lalu memetakan 10 mesin ('Bad Actors') yang membutuhkan inspeksi lebih lanjut.
-        """)
+    st.write("""
+    **Cara Menggunakan Sistem:**
+    1. Siapkan file riwayat kerusakan dari *database* (Format Excel `.xlsx`).
+    2. Buka panel menu di sebelah kiri ⬅️.
+    3. Klik **Browse files** dan masukkan file Anda.
+    4. Sistem akan secara otomatis menghitung *Mean Time Between Failures* (MTBF) hingga presisi **Tahun, Bulan, dan Hari**, lalu memetakan 10 mesin ('Bad Actors') yang membutuhkan inspeksi lebih lanjut.
+    """)
